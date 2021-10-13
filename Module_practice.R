@@ -229,10 +229,10 @@ s <- 0.98
 n <- 15
 sem <- s/sqrt(n)
 
-z <- (m - mu)/sem
-z
+t <- (m - mu)/sem
+t
 
-p <- pt(z, df = n - 1, lower.tail = TRUE)
+p <- pt(t, df = n - 1, lower.tail = TRUE)
 p
 
 #
@@ -384,6 +384,18 @@ v <- c(0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0,
 #   Calculate z and the p value associated with z
 # Calculate the 95% CI around 
 
+
+pihat <- .8
+pi <- mean(v)
+s <- sd(v)
+n <- length(v)
+sem <- sqrt(pi * (1 - pi)/n)
+
+z <- (pi - pihat)/sem
+z
+
+p <- pnorm(z, df = n - 1, lower.tail = TRUE)
+p
 
 
 
