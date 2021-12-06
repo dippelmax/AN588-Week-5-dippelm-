@@ -4,18 +4,33 @@ output:
   html_document:
     df_print: paged
 ---
+
+```{r}
 library(curl)
 library(Rmisc)
 library(ggplot2)
 f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall21/zombies.csv")
 d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 head(d)
+```
+
+
 
 
 
 1. Calculate the population mean and standard deviation for each quantitative random variable (height, weight, age, number of zombies killed, and years of education). NOTE: You will not want to use the built in var() and sd() commands as these are for samples.
 
 ```{r}
+
+# Wrong sd, smaple not population
+
+# pop_v <- function(x) {
+# sum((x - mean(x))^2)/(length(x))
+# }
+# pop_sd <- function(x) {
+#    sqrt(pop_v(x))
+# }
+# pop_sd(d$height)
 
 height_sum <- summarySE(data = d, measurevar = "height")
 height_sum
@@ -42,13 +57,14 @@ ggplot(data = d, aes(x = gender, y = weight)) +
   geom_boxplot(color="coral", fill="black")
 
 ggplot(data = d, aes(x = gender, y = zombies_killed)) +
-  geom_boxplot()
+  geom_boxplot(color="orange", fill="black")
   
-ggplot(data = d, aes(x = gender, y = years_of_education)) +
-  geom_boxplot()
+ggplot(data = d, aes(x = gender, y = years_of_education, fill=gender)) +
+  geom_boxplot() + scale_fill_manual(values=c("orange2", "black")) + theme_bw()
+   
 
-ggplot(data = d, aes(x = gender, y = age)) +
-  geom_boxplot()
+ggplot(data = d, aes(x = gender, y = age, fill=gender)) +
+  geom_boxplot() + scale_fill_manual(values=c("darkorange1", "darkslategray")) 
 
 ```
 
@@ -57,10 +73,10 @@ ggplot(data = d, aes(x = gender, y = age)) +
 ```{r}
 
 ggplot(data = d, aes(x = age, y = height)) +
-  geom_point() + geom_smooth(method = lm)
+  geom_point(color="darkorange") + geom_smooth(method = lm) 
 
 ggplot(data = d, aes(x = age, y = weight)) +
-  geom_point() + geom_smooth(method = lm)
+  geom_point(aes(colour = factor(gender))) + geom_smooth(method = lm)
 
 # Yes both height and weight seem to be positivly coorelated with age
 ```
@@ -93,15 +109,21 @@ qqnorm(d$zombies_killed)
 qqline(d$zombies_killed)
 
 # Zombies killed does not follow a normal distribution
-#It looks like a binomial distribution
+#It looks like a binomial or poisson distribution
 
 hist(d$years_of_education)
 qqnorm(d$years_of_education)
 qqline(d$years_of_education)
 
 # Years of education does not follow a normal distribution
-# It looks like a binomial distribution
+# It looks like a binomial or poisson distribution
 
+# Ok so I didn't visually verify the poisson distribution
+
+
+hist(rpois(1000,3), probability = T )
+hist(rnorm(1000,3), probability = T )
+hist(rbinom(1000, size = 1000, prob = .003)) # This graph is weird
 
 ```
 
@@ -154,10 +176,21 @@ sd_zombies_killed
 sem_zombies_killed <- sd(s_zombies_killed)/sqrt(length(s_zombies_killed))
 sem_zombies_killed
 
+# This is wrong
+
 lower_zombies_killed <- m_zombies_killed - qpois(1 - 0.05/2, kill_sum$zombies_killed) * sem_zombies_killed 
 upper_zombies_killed <- m_zombies_killed + qpois(1 - 0.05/2, kill_sum$zombies_killed) * sem_zombies_killed 
 ci_t_zombies_killed <- c(lower_zombies_killed, upper_zombies_killed)
 ci_t_zombies_killed
+
+# needed to normalize data set 
+
+z_set <- NULL  
+for (i in 1:10000) {
+z_set[i] <- mean(sample(s_zombies_killed, 30, replace = TRUE))
+ }
+quantile(z_set, c(0.025, 0.975))
+
 
 s_years_of_education <- sample(d$years_of_education, size = 30, replace = FALSE)
 m_years_of_education <- mean(s_years_of_education)
@@ -167,15 +200,21 @@ sd_years_of_education
 sem_years_of_education <- sd(s_years_of_education)/sqrt(length(s_years_of_education))
 sem_years_of_education
 
+# This is wrong
 
 lower_years_of_education <- m_years_of_education - qpois(1 - 0.05/2, educate_sum$years_of_education) * sem_years_of_education 
 upper_years_of_education <- m_years_of_education + qpois(1 - 0.05/2, educate_sum$years_of_education) * sem_years_of_education 
 ci_t_years_of_education <- c(lower_years_of_education, upper_years_of_education)
 ci_t_years_of_education
 
+# needed to normalize data set 
 
-# qnorm(p, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
-# qpois(p, lambda, lower.tail = TRUE, log.p = FALSE)
+e_set <- NULL  
+for (i in 1:10000) {
+e_set[i] <- mean(sample(s_years_of_education, 30, replace = TRUE))
+ }
+quantile(e_set, c(0.025, 0.975))
+
 
 ```
 
